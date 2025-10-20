@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Initializing  // Access Granted</title>
+    
+    <style>
+        /* General Setup */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Monospace', monospace; /* Classic Terminal Font */
+            color: #00ff41; /* Primary Green Neon */
+            text-shadow: 0 0 5px #00ff41;
+        }
+
+        :root {
+            --primary-green: #00ff41;
+            --dark-bg: #0d0d10;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            /* Prevent scrolling for the single-screen terminal aesthetic */
+            overflow: hidden; 
+            height: 100vh;
+            padding: 20px;
+        }
+
+        /* 1. CRT SCREEN EFFECT */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Scanlines effect */
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* 2. Main Terminal Container */
+        #terminal-output {
+            width: 100%;
+            height: 100%;
+            white-space: pre-wrap; /* Preserve formatting and wrap lines */
+            line-height: 1.3;
+            font-size: 1em;
+            overflow-y: auto; /* Allow scrolling for long output lines */
+            
+            /* Hide the scrollbar for aesthetics */
+            scrollbar-width: none;
+            -ms-overflow-style: none; 
+        }
+
+        #terminal-output::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* 3. Output Styling */
+        .line {
+            opacity: 0; /* Hidden by default, shown by JS */
+            margin-bottom: 5px;
+            animation: flicker 0.5s infinite alternate; /* Subtle flicker */
+        }
+        
+        .prompt {
+            color: #ff00ff; /* Pink for command prompts */
+            text-shadow: 0 0 5px #ff00ff;
+        }
+
+        .highlight {
+            color: #00ffff; /* Cyan for file names/links */
+            text-shadow: 0 0 5px #00ffff;
+            text-decoration: none;
+        }
+
+        .error {
+            color: #ff0000; /* Red for errors/status */
+            text-shadow: 0 0 5px #ff0000;
+        }
+
+        /* 4. Navigation Links (Styled as Commands) */
+        .command-link {
+            text-decoration: underline;
+            cursor: pointer;
+            transition: color 0.1s;
+        }
+
+        .command-link:hover {
+            color: #00ffff;
+            text-shadow: 0 0 8px #00ffff;
+        }
+
+        /* 5. Cursor Simulation (Blinking Block) */
+        #cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.2em;
+            background-color: var(--primary-green);
+            margin-left: 5px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        @keyframes flicker {
+            0% { opacity: 1; }
+            4% { opacity: 0.95; }
+            6% { opacity: 1; }
+            7% { opacity: 0.9; }
+            10% { opacity: 1; }
+            20% { opacity: 0.85; }
+            21% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="terminal-output">
+        </div>
+    
+    <span id="cursor"></span>
+
+    <script>
+        const terminalOutput = document.getElementById('terminal-output');
+        const cursor = document.getElementById('cursor');
+
+        // Define the content as an array of objects
+        const terminalLines = [
+            { text: "INITIATING  PORTFOLIO V1.0...", className: 'error' },
+            { text: "Welcome to Naveed's World", className: 'error' },
+            { text: "_____________________________________________________________________________________________________________________________________________________________________________________________", className: '' },
+            { text: "", className: '' },
+            { text: "// WELCOME TO THE DIGITAL ARCHIVE OF  MUHAMMAD NAVEED", className: '' },
+            { text: "// ROLE: Machine Learning Engineer", className: '' },
+            { text: "// STATUS: BS`AI ", className: '' },
+            { text: "", className: '' },
+            { text: "Type 'help' for a list of available commands.", className: '' },
+            { text: "", className: '' },
+            { text: "> ", className: 'prompt', isInput: true }
+        ];
+
+        let lineIndex = 0;
+
+        // Function to simulate typing a single line
+        function typeLine(lineData, callback) {
+            const lineElement = document.createElement('div');
+            lineElement.classList.add('line');
+            if (lineData.className) {
+                lineElement.classList.add(lineData.className);
+            }
+            terminalOutput.appendChild(lineElement);
+
+            if (lineData.isInput) {
+                lineElement.innerHTML = lineData.text;
+                cursor.style.display = 'inline-block';
+                // Wait for the user interaction to proceed
+                if (callback) callback();
+                return;
+            }
+
+            let charIndex = 0;
+            const text = lineData.text;
+
+            function typeChar() {
+                if (charIndex < text.length) {
+                    lineElement.textContent += text.charAt(charIndex);
+                    charIndex++;
+                    setTimeout(typeChar, 40); // Typing speed
+                } else {
+                    lineElement.style.opacity = 1; // Fade in
+                    if (callback) callback();
+                }
+            }
+            typeChar();
+        }
+
+        // Function to process the entire array of lines
+        function processLines() {
+            if (lineIndex < terminalLines.length) {
+                const currentLine = terminalLines[lineIndex];
+                
+                typeLine(currentLine, () => {
+                    lineIndex++;
+                    // Only display the cursor after the initial load is complete
+                    if (!currentLine.isInput) {
+                         processLines();
+                    }
+                });
+            }
+        }
+
+        // Initial content load
+        processLines();
+
+        // -------------------------------------------------------------
+        // 2. INPUT HANDLER LOGIC
+        // -------------------------------------------------------------
+        
+        const commands = {
+            'help': [
+                { text: "// AVAILABLE COMMANDS:", className: '' },
+                { text: "   -- about: Display background and current objective.", className: '' },
+                { text: "   -- skills: Show technical proficiency data grid.", className: '' },
+                { text: "   -- projects: List archived projects.", className: '' },
+                { text: "   -- contact: Initiate secure communication protocol.", className: '' },
+            ],
+            
+            'about': [
+                { text: "// DATA LOG: MUHAMMAD NAVEED", className: 'highlight' },
+                { text: "   Objective: Building highly scalable, performant web applications.", className: '' },
+                { text: "   Focus: Advanced JavaScript, React, and server-side optimization.", className: '' },
+            ],
+            
+            'skills': [
+                { text: "// TECHNICAL MATRIX", className: 'highlight' },
+                { text: "   > MACHINE LEARNING ENGINEER , DATA SCIENTIST ,AI ENGINEER", className: '' },
+                { text: "   > Backend: Node.js, Express, Python, Django/Flask (Basic)", className: '' },
+                { text: "   > Database: MongoDB, PostgreSQL (Basic)", className: '' },
+            ],
+
+            'projects': [
+                { text: "// ECOMMERCE (Click links to view)", className: 'highlight' },
+                { text: '   [01] E-Commerce API: <a class="highlight command-link" href="#" target="_blank">view_project_01.link</a>', className: '' },
+                { text: '   [02] Realtime Chat App: <a class="highlight command-link" href="#" target="_blank">view_project_02.link</a>', className: '' },
+                { text: '   [03] Portfolio UI (This): <a class="highlight command-link" href="#" target="_blank">view_source.link</a>', className: '' },
+            ],
+
+            'contact': [
+                { text: "// INITIATE SECURE PROTOCOL", className: 'highlight' },
+                { text: "   E-Mail: <a class='highlight command-link' href='mailto:your.email@example.com'>send_message@server.com</a>", className: '' },
+                { text: "   GitHub: <a class='highlight command-link' href='#' target='_blank'>github/your-username</a>", className: '' },
+            ]
+        };
+
+        let currentInput = '';
+
+        document.addEventListener('keydown', (e) => {
+            // Only process input if the initial lines have been typed
+            if (lineIndex < terminalLines.length) return; 
+
+            const promptElement = terminalOutput.lastElementChild;
+            
+            if (e.key.length === 1 && e.key.match(/[a-zA-Z0-9\s-]/)) {
+                // Type character
+                currentInput += e.key.toLowerCase();
+                promptElement.innerHTML = `> ${currentInput}`;
+            } else if (e.key === 'Backspace') {
+                // Delete character
+                currentInput = currentInput.slice(0, -1);
+                promptElement.innerHTML = `> ${currentInput}`;
+                e.preventDefault();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                processCommand(currentInput);
+                currentInput = ''; // Reset input
+            }
+        });
+
+        function processCommand(input) {
+            const command = input.trim();
+            const promptElement = terminalOutput.lastElementChild;
+            
+            // 1. Move the cursor and finalize the current input line
+            cursor.style.display = 'none';
+            promptElement.innerHTML = `> <span class="prompt">${command}</span>`;
+            
+            // 2. Process command and add response
+            const responseLines = commands[command] || [
+                { text: `Error: Command '${command}' not found. Type 'help'.`, className: 'error' }
+            ];
+
+            responseLines.forEach(line => {
+                const newLine = document.createElement('div');
+                newLine.classList.add('line');
+                if (line.className) newLine.classList.add(line.className);
+                
+                // Allow HTML for links
+                newLine.innerHTML = line.text; 
+                newLine.style.opacity = 1;
+                terminalOutput.appendChild(newLine);
+            });
+
+            // 3. Add new prompt line
+            const newPrompt = document.createElement('div');
+            newPrompt.classList.add('line');
+            newPrompt.classList.add('prompt');
+            newPrompt.innerHTML = "> ";
+            newPrompt.style.opacity = 1;
+            terminalOutput.appendChild(newPrompt);
+            
+            // 4. Reset cursor position and visibility
+            cursor.style.display = 'inline-block';
+            newPrompt.appendChild(cursor);
+
+            // 5. Scroll to bottom
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+    </script>
+
+</body>
+</html>
